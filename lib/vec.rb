@@ -1,5 +1,3 @@
-require 'minitest/autorun'
-
 class Vec2
   attr_accessor :x, :y
   def initialize x, y
@@ -44,10 +42,15 @@ class Vec2
     (other - self).magnitude
   end
 
-end
-
-class VecTest < Minitest::Test
-  def test_distance_from_other_vector
-    assert_equal Vec2.new(0.0, 0.0).distance_from(Vec2.new(1.0, 0.0)), 1.0
+  def clamp s
+    m = self.magnitude
+    if m == 0.0
+      Vec2.new 0, 0
+    elsif m > s
+      self.scale s.to_f/m
+    else
+      self
+    end
   end
+
 end
