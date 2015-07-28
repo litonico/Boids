@@ -37,6 +37,8 @@ class SimulationWindow < Thingy
       boid.position = wrap boid.position
 
       # Boids themselves
+      # TODO(Lito): Boids should be colored according
+      # to their number of neighbors
       ellipse(
         (boid.position.x*s).to_i,
         (boid.position.y*s).to_i,

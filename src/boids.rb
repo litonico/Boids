@@ -15,7 +15,55 @@ class Boid
     @position += @velocity*dt
     @acceleration = Vec2.new 0.0, 0.0
   end
+
+  ##
+  # Steer towards the average heading of the nearby flock
+  #
+  def align_with_flock
+    num_neighbors = self.neighbors.length.to_f
+    if num_neighbors != 0.0
+      velocity_sum = Vec2.new 0.0, 0.0
+      self.neighbors.each do |other_boid|
+        velocity_sum += other_boid.velocity
+      end
+      average_vel = Vec2.new velocity_sum.x/num_neighbors,
+                              velocity_sum.y/num_neighbors
+      direction = average_vel.normalize
+      self.acceleration += direction
+    end
+  end
+
+  ##
+  # Don't hit nearby boids
+  #
+  def avoid_neighbors radius
+    self.neighbors.each do |other_boid|
+      distance = self.position.distance_from(other_boid.position)
+      if distance < radius
+        direction = (other_boid.position - self.position).normalize
+        self.acceleration -= direction * 2       # Repulsion slightly
+        other_boid.acceleration += direction * 2 # stronger than attraction
+      end
+    end
+  end
+
+  ##
+  # Move toward the center of the nearby flock
+  #
+  def move_toward_flock
+    num_neighbors = self.neighbors.length.to_f
+    if num_neighbors != 0.0
+      sum = Vec2.new 0.0, 0.0
+      self.neighbors.each do |other_boid|
+        sum += other_boid.position
+      end
+      average_pos = Vec2.new sum.x/num_neighbors, sum.y/num_neighbors
+      direction = (average_pos - self.position).normalize
+      self.acceleration += direction
+    end
+  end
 end
+
 
 class Boids
   attr_accessor :boids, :neighbor_radius
@@ -25,17 +73,18 @@ class Boids
   end
 
   def step delta_time
-    get_neighbors
-    avoid_neighbors 20.0
-    move_toward_flock
-    align_with_flock
+    set_neighbors
 
     boids.each do |boid|
+      boid.avoid_neighbors 20.0
+      boid.move_toward_flock
+      boid.align_with_flock
+
       boid.step delta_time
     end
   end
 
-  def get_neighbors
+  def set_neighbors
     # Reset neighbors
     boids.each do |boid|
       boid.neighbors = []
@@ -50,56 +99,9 @@ class Boids
     end
   end
 
-  ##
-  # Don't hit nearby boids
-  #
-  def avoid_neighbors radius
-    boids.each do |boid|
-      boid.neighbors.each do |other_boid|
-        distance = boid.position.distance_from(other_boid.position)
-        if distance < radius
-          direction = (other_boid.position - boid.position).normalize
-          boid.acceleration -= direction * 2       # Repulsion slightly
-          other_boid.acceleration += direction * 2 # stronger than attraction
-        end
-      end
-    end
-  end
-
-  ##
-  # Move toward the center of the nearby flock
-  #
-  def move_toward_flock
-    boids.each do |boid|
-      num_neighbors = boid.neighbors.length.to_f
-      if num_neighbors != 0.0
-        sum = Vec2.new 0.0, 0.0
-        boid.neighbors.each do |other_boid|
-          sum += other_boid.position
-        end
-        average_pos = Vec2.new sum.x/num_neighbors, sum.y/num_neighbors
-        direction = (average_pos - boid.position).normalize
-        boid.acceleration += direction
-      end
-    end
-  end
-
-  ##
-  # Steer towards the average heading of the nearby flock
-  #
-  def align_with_flock
-    boids.each do |boid|
-      num_neighbors = boid.neighbors.length.to_f
-      if num_neighbors != 0.0
-        velocity_sum = Vec2.new 0.0, 0.0
-        boid.neighbors.each do |other_boid|
-          velocity_sum += other_boid.velocity
-        end
-        average_vel = Vec2.new velocity_sum.x/num_neighbors,
-                               velocity_sum.y/num_neighbors
-        direction = average_vel.normalize
-        boid.acceleration += direction
-      end
-    end
+  ## TODO(Lito)
+  # At random intervals, one bird heads unshakably toward a random point.
+  # After it gets there, it reverts back to normal behavior
+  def one_boird_wanders
   end
 end
