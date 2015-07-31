@@ -16,51 +16,58 @@ class Boid
     @acceleration = Vec2.new 0.0, 0.0
   end
 
+  def update
+    self.acceleration += (avoid_neighbors 20.0) * 2
+    self.acceleration += move_toward_flock
+    self.acceleration += align_with_flock
+  end
+
   ##
   # Steer towards the average heading of the nearby flock
   #
   def align_with_flock
     num_neighbors = self.neighbors.length.to_f
+    direction = V_ZERO
     if num_neighbors != 0.0
-      velocity_sum = Vec2.new 0.0, 0.0
+      velocity_sum = V_ZERO
       self.neighbors.each do |other_boid|
         velocity_sum += other_boid.velocity
       end
-      average_vel = Vec2.new velocity_sum.x/num_neighbors,
-                              velocity_sum.y/num_neighbors
+      average_vel = velocity_sum / num_neighbors
       direction = average_vel.normalize
-      self.acceleration += direction
     end
+    direction
   end
 
   ##
   # Don't hit nearby boids
   #
   def avoid_neighbors radius
+    direction = V_ZERO
     self.neighbors.each do |other_boid|
       distance = self.position.distance_from(other_boid.position)
       if distance < radius
-        direction = (other_boid.position - self.position).normalize
-        self.acceleration -= direction * 2       # Repulsion slightly
-        other_boid.acceleration += direction * 2 # stronger than attraction
+        direction -= (other_boid.position - self.position).normalize
       end
     end
+    direction
   end
 
   ##
   # Move toward the center of the nearby flock
   #
   def move_toward_flock
+    direction = V_ZERO
+    sum = V_ZERO
     num_neighbors = self.neighbors.length.to_f
     if num_neighbors != 0.0
-      sum = Vec2.new 0.0, 0.0
       self.neighbors.each do |other_boid|
         sum += other_boid.position
       end
-      average_pos = Vec2.new sum.x/num_neighbors, sum.y/num_neighbors
+      average_pos = sum/num_neighbors
       direction = (average_pos - self.position).normalize
-      self.acceleration += direction
     end
+    direction
   end
 end
 
@@ -76,10 +83,7 @@ class Boids
     set_neighbors
 
     boids.each do |boid|
-      boid.avoid_neighbors 20.0
-      boid.move_toward_flock
-      boid.align_with_flock
-
+      boid.update
       boid.step delta_time
     end
   end

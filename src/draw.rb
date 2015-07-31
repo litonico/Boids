@@ -6,7 +6,7 @@ WINSIZE = 500
 class SimulationWindow < Thingy
   attr_reader :simulation
   def initialize
-    super WINSIZE, WINSIZE, 16, "Smoothed Particle Hydrodynamics"
+    super WINSIZE, WINSIZE, 16, "Boids"
     @simulation = Boids.new
     # Add a bunch of boids to the simulation
     (1..10).each do |x|

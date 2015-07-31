@@ -21,6 +21,10 @@ class Vec2
     Vec2.new @x*s, @y*s
   end
 
+  def / s
+    Vec2.new @x/s, @y/s
+  end
+
   def == other
     @x == other.x && @y == other.y
   end
@@ -54,3 +58,5 @@ class Vec2
   end
 
 end
+
+V_ZERO = Vec2.new 0.0, 0.0
