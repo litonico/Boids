@@ -1,3 +1,3 @@
 task :default do
-  `rsdl ./src/draw.rb`
+  `ruby src/timetest.rb`
 end
